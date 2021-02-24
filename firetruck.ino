@@ -39,7 +39,8 @@ unsigned int    TickCounter=0;
 #define FLASH2SPEED           48
 #define FLASH3SPEED           52
 #define FLASH4SPEED           55
-#define FLASHHAZARDSPEED      50                // 50 = 0,5 sec     100 = 1 sec      25 = 0,25 sec etc 
+#define FLASHFRONTSPEED       50
+#define HAZARDLIGHTSSPEED     49                // 50 = 0,5 sec     100 = 1 sec      25 = 0,25 sec etc 
 
 // This runs only once when powering on
 void setup()
@@ -102,7 +103,11 @@ void loop()
         {
               digitalWrite(FLASH4, !digitalRead(FLASH4));
         }
-        if (TickCounter % FLASHHAZARDSPEED == 0)             // Every half second we invert the hazard lights
+        if (TickCounter % HAZARDSLIGHTSPEED == 0)             // Every half second we invert the hazard lights
+        {
+              digitalWrite(HAZARDLIGHTS, !digitalRead(HAZARDLIGHTS));
+        }
+        if (TickCounter % FLASHFRONTSPEED == 0)             // Every half second we invert the hazard lights
         {
               digitalWrite(FLASHLIGHTS1, !digitalRead(FLASHLIGHTS1));
               digitalWrite(FLASHLIGHTS2, !digitalRead(FLASHLIGHTS2));
