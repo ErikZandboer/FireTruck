@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------------------------*/
-/* FireTruck led & audio simulation.                                                          */
+/* Truck led & motor simulation.                                                              */
 /*                                                                                            */
 /* Controls various leds and an mp3 player to simulate a model truck                          */
 /*                                                                                            */
@@ -13,13 +13,10 @@
 #include "RedMP3.h"
 
 // Define the physical pinout
-#define FLASH1         17
-#define FLASH2         18
-#define FLASH3         19
-#define FLASH4         20
-#define FRONTFLASH1    24
-#define FRONTFLASH2    25
-#define HAZARDLIGHTS   26 
+#define HAZARDLIGHTS   24
+#define REVLIGHTS      25
+#define BREAKLIGHTS    26 
+#define CONSTLIGHTS    27
 #define MP3_RX         23
 #define MP3_TX         22   // connect to RX of the MP3 player module
 
@@ -34,33 +31,37 @@ unsigned int    TickCounter=0;
 // Timings and things to change
 #define TIM_SAMPLESTART       5*RUN_FREQ        // 5 seconds
 #define TIM_SAMPLELENGTH      61*RUN_FREQ       // 61 seconds
+#define TIM_STARTCONST        3*RUN_FREQ
+#define TIM_STOPCONST         57*RUN_FREQ
+#define TIM_BREAK1_ON         14*RUN_FREQ
+#define TIM_BREAK1_OFF        15*RUN_FREQ
+#define TIM_BREAK2_ON         30*RUN_FREQ
+#define TIM_BREAK2_OFF        31*RUN_FREQ
+#define TIM_BREAK3_ON         39*RUN_FREQ
+#define TIM_BREAK3_OFF        40*RUN_FREQ
+#define TIM_BREAK4_ON         43*RUN_FREQ
+#define TIM_BREAK4_OFF        44*RUN_FREQ
+#define TIM_BREAK5_ON         50*RUN_FREQ
+#define TIM_BREAK5_OFF        51*RUN_FREQ
+#define TIM_REV_START         51*RUN_FREQ
+#define TIM_REV_STOP          66*RUN_FREQ
+#define TIM_REPEAT            90*RUN_FREQ       // Rewind at 90 seconds (max. value is 655535 = 327 seconds = a little over 5 minutes)
 
-#define FLASH1SPEED           45
-#define FLASH2SPEED           48
-#define FLASH3SPEED           52
-#define FLASH4SPEED           55
-#define FLASHFRONTSPEED       50
-#define HAZARDLIGHTSSPEED     49                // 50 = 0,5 sec     100 = 1 sec      25 = 0,25 sec etc 
+#define FLASHSPEED            50                // 50 = 0,5 sec     100 = 1 sec      25 = 0,25 sec etc 
 
 // This runs only once when powering on
 void setup()
 {
-        digitalWrite(FLASH1, HIGH);          // FLASH light start OFF
-        digitalWrite(FLASH2, HIGH);          // FLASH light start OFF
-        digitalWrite(FLASH3, HIGH);          // FLASH light start OFF
-        digitalWrite(FLASH4, HIGH);          // FLASH light start OFF
         digitalWrite(HAZARDLIGHTS, LOW);     // Hazard lights led group starts OFF
-        digitalWrite(FRONTFLASH1,  HIGH);    // half of FRONTFLASH lights led group starts ON...
-        digitalWrite(FRONTFLASH2,  LOW);     // ...the other half starts OFF
+        digitalWrite(REVLIGHTS,    LOW);     // Reverse lights led group starts OFF
+        digitalWrite(BREAKLIGHTS,  LOW);     // Brake light led group starts OFF
+        digitalWrite(CONSTLIGHTS,  LOW);     // Contant-on led group starts OFF
         
         // All led groups as OUTPUT
-        pinMode (FLASH1, OUTPUT);
-        pinMode (FLASH2, OUTPUT);
-        pinMode (FLASH3, OUTPUT);
-        pinMode (FLASH4, OUTPUT);
         pinMode (HAZARDLIGHTS,   OUTPUT);
-        pinMode (FRONTFLASH1,   OUTPUT);
-        pinMode (FRONTFLASH2,   OUTPUT);
+        pinMode (REVLIGHTS,   OUTPUT);
+        pinMode (BREAKLIGHTS,   OUTPUT);
+        pinMode (CONSTLIGHTS,   OUTPUT);
         
         TickCounter=0;
 }
@@ -85,32 +86,47 @@ void loop()
         if (TickCounter == TIM_SAMPLESTART+TIM_SAMPLELENGTH) mp3.stopPlay(); // Stop playing after the show is over
 
         // Time the break lights
-                // Time the hazard lights
+        if ( (TickCounter == TIM_BREAK1_ON) ||
+             (TickCounter == TIM_BREAK2_ON) ||
+             (TickCounter == TIM_BREAK3_ON) ||
+             (TickCounter == TIM_BREAK4_ON) ||
+             (TickCounter == TIM_BREAK5_ON)    )
+        {
+                digitalWrite(BREAKLIGHTS, HIGH);
+        }
+        if ( (TickCounter == TIM_BREAK1_OFF) ||
+             (TickCounter == TIM_BREAK2_OFF) ||
+             (TickCounter == TIM_BREAK3_OFF) ||
+             (TickCounter == TIM_BREAK4_OFF) ||
+             (TickCounter == TIM_BREAK5_OFF)    )
+        {
+                digitalWrite(BREAKLIGHTS, LOW);
+        }
+        
+        // Time the reverse lights
+        if ( TickCounter == TIM_REV_START )
+        {
+             digitalWrite(REVLIGHTS, HIGH);   
+        }
+        if ( TickCounter == TIM_REV_STOP )
+        {
+             digitalWrite(REVLIGHTS, LOW);   
+        }
 
-        if (TickCounter % FLASH1SPEED == 0)             // Every half second we invert the hazard lights
+        // Time the constant lights
+        if ( TickCounter == TIM_STARTCONST )
         {
-              digitalWrite(FLASH1, !digitalRead(FLASH1));
+             digitalWrite(CONSTLIGHTS, HIGH);   
         }
-        if (TickCounter % FLASH2SPEED == 0)             // Every half second we invert the hazard lights
+        if ( TickCounter == TIM_STOPCONST )
         {
-              digitalWrite(FLASH2, !digitalRead(FLASH2));
+             digitalWrite(CONSTLIGHTS, LOW);   
         }
-        if (TickCounter % FLASH3SPEED == 0)             // Every half second we invert the hazard lights
-        {
-              digitalWrite(FLASH3, !digitalRead(FLASH3));
-        }
-        if (TickCounter % FLASH4SPEED == 0)             // Every half second we invert the hazard lights
-        {
-              digitalWrite(FLASH4, !digitalRead(FLASH4));
-        }
-        if (TickCounter % HAZARDSLIGHTSPEED == 0)             // Every half second we invert the hazard lights
+        
+        // Time the hazard lights
+        if (TickCounter % FLASHSPEED == 0)             // Every half second we invert the hazard lights
         {
               digitalWrite(HAZARDLIGHTS, !digitalRead(HAZARDLIGHTS));
-        }
-        if (TickCounter % FLASHFRONTSPEED == 0)             // Every half second we invert the hazard lights
-        {
-              digitalWrite(FLASHLIGHTS1, !digitalRead(FLASHLIGHTS1));
-              digitalWrite(FLASHLIGHTS2, !digitalRead(FLASHLIGHTS2));
         }
 
         delay(1); // Added this dummy delay() to make sure the code takes more than 1 ms to execute.
