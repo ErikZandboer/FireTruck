@@ -102,7 +102,7 @@ void loop()
         {
               digitalWrite(FLASH4, !digitalRead(FLASH4));
         }
-        if (TickCounter % HAZARDSLIGHTSPEED == 0)             // Every half second we invert the hazard lights
+        if (TickCounter % HAZARDLIGHTSSPEED == 0)             // Every half second we invert the hazard lights
         {
               digitalWrite(HAZARDLIGHTS, !digitalRead(HAZARDLIGHTS));
         }
