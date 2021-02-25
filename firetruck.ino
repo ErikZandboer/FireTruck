@@ -20,6 +20,7 @@
 #define FRONTFLASH1    24
 #define FRONTFLASH2    25
 #define HAZARDLIGHTS   26 
+#define HEADLIGHTS     27
 #define MP3_RX         23
 #define MP3_TX         22   // connect to RX of the MP3 player module
 
@@ -51,6 +52,7 @@ void setup()
         digitalWrite(FLASH3, HIGH);          // FLASH light start OFF
         digitalWrite(FLASH4, HIGH);          // FLASH light start OFF
         digitalWrite(HAZARDLIGHTS, LOW);     // Hazard lights led group starts OFF
+        digitalWrite(HEADLIGHTS,   LOW);     // Head lights led group starts OFF
         digitalWrite(FRONTFLASH1,  HIGH);    // half of FRONTFLASH lights led group starts ON...
         digitalWrite(FRONTFLASH2,  LOW);     // ...the other half starts OFF
         
@@ -59,7 +61,8 @@ void setup()
         pinMode (FLASH2, OUTPUT);
         pinMode (FLASH3, OUTPUT);
         pinMode (FLASH4, OUTPUT);
-        pinMode (HAZARDLIGHTS,   OUTPUT);
+        pinMode (HAZARDLIGHTS,  OUTPUT);
+        pinMode (HEADLIGHTS,    OUTPUT);
         pinMode (FRONTFLASH1,   OUTPUT);
         pinMode (FRONTFLASH2,   OUTPUT);
         
@@ -82,9 +85,16 @@ void loop()
         }
         
         // Time the AUDIO
-        if (TickCounter == TIM_SAMPLESTART)  mp3.playWithVolume(1,26);  // Play the first mp3 on the card at volume 26 (max is 30)
-        if (TickCounter == TIM_SAMPLESTART+TIM_SAMPLELENGTH) mp3.stopPlay(); // Stop playing after the show is over
-
+        if (TickCounter == TIM_SAMPLESTART)
+        {
+              mp3.playWithVolume(1,26);  // Play the first mp3 on the card at volume 26 (max is 30)
+              digitalWrite(HEADLIGHTS, HIGH); // Sample plays? Then headlights switch ON
+        }        
+        if (TickCounter == TIM_SAMPLESTART+TIM_SAMPLELENGTH)
+        {
+              mp3.stopPlay(); // Stop playing after the show is over
+              digitalWrite(HEADLIGHTS, LOW); // Sample stops? Then headlights switch OFF
+        }
         // Time all of the flashing lights
         if (TickCounter % FLASH1SPEED == 0)             // Every half second we invert the hazard lights
         {
